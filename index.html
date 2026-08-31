@@ -6,11 +6,17 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Meteorite Landings Map</title>
+    <title>Meteorite Landings Map | Interactive Meteorite Database</title>
 
     <meta name="description"
-        content="Explore the fascinating world of meteorites with this interactive map that shows the locations, dates, names and sizes of meteorite landings around the world fell or found from 861 AD to 2013. Learn about the origin, composition, and impact of these cosmic rocks that have fallen to Earth.">
-    <meta name="keywords" content="meteorite landings, fallen meteorites, meteorite data">
+        content="Explore an interactive meteorite landings map with meteorite locations, classes, masses, years, and direct Meteoritical Bulletin links. Built from a large up-to-date meteorite dataset with a cutoff in October 2024.">
+    <meta name="keywords"
+        content="meteorite landings map, meteorite map, meteorite database, meteoritical bulletin, meteorite locations, meteorite dataset, meteorite classification, meteorite explorer">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Meteorite Landings Map">
+    <meta property="og:description"
+        content="Interactive map of meteorite landings with an up-to-date dataset and direct links to Meteoritical Bulletin records.">
+    <meta property="og:type" content="website">
     <!-- does noy cause problems -->
 
     <link rel="stylesheet" href="styles/style.css">
@@ -37,6 +43,7 @@
 
         <header>
             <h1 id="title-top">Meteorite Landings Map</h1>
+            <p class="page-intro">Interactive meteorite explorer with global landing locations, classifications, masses, years, and source links.</p>
         </header>
 
         <form class="form">
@@ -95,23 +102,18 @@
             </div>
 
             <div id="advert">
-                <p>Use the filters at the top of the page to display only the desired meteorites.</p>
-                <p>Zoom in a location or click on a cluster bubble to break the clusters.</p>
+                <p>Use the filters at the top of the page to focus on meteorites by mass or year.</p>
+                <p>Zoom in on a region or click a cluster to break it apart and inspect individual landings.</p>
                 <p>
-                    Click on a marker to explore the fascinating world of
-                    meteorites with this interactive map that shows the locations, dates, names and sizes of meteorite
-                    landings around the world fell or found from 861 AD to 2024. Learn about the origin, composition,
-                    and impact of these cosmic rocks that have fallen to Earth.
+                    Explore meteorite landings from around the world with a comprehensive, up-to-date dataset drawn from
+                    the Meteoritical Bulletin, including locations, mass, fall information, classes, and direct source
+                    links.
                 </p>
-
             </div>
 
             <div id="data-source">
-                <pre>
-                Data source: <a href="https://www.lpi.usra.edu/meteor/metbull.php" target="_blank">Meteoritical Bulletin</a>
-                
-                Data cutoff: October 2024
-                </pre>
+                <p>Data source: <a href="https://www.lpi.usra.edu/meteor/metbull.php" target="_blank" rel="noopener noreferrer">Meteoritical Bulletin</a></p>
+                <p>Data cutoff: October 2024.</p>
             </div>
 
         </main>
@@ -122,7 +124,7 @@
         <div id="footer-content">
             <ul>
                 <li>
-                    <a href="pages/about">About</a>
+                    <a href="pages/about.html">About</a>
                 </li>
             </ul>
         </div>

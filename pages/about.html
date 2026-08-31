@@ -5,11 +5,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>About Meteorite Landings Map Project</title>
+    <title>About the Meteorite Landings Map | Comprehensive Meteorite Database</title>
 
     <meta name="description"
-        content="Meteorite landings map is a small project from a first year Computer Science student aiming at practicing to fetch JSON data from a dataset and its consequent manipulation.">
-    <meta name="keywords" content="meteorite landings, fallen meteorites, meteorite data">
+        content="Explore an interactive meteorite landings map built from a comprehensive Meteoritical Bulletin dataset, featuring meteorite locations, classifications, masses, discovery years, and direct bulletin links.">
+    <meta name="keywords"
+        content="meteorite landings map, meteorite database, meteoritical bulletin, meteorite locations, meteorite map, meteorite dataset, meteorites by year, meteorite classification">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="Meteorite Landings Map">
+    <meta property="og:description"
+        content="Interactive map of meteorite landings with a comprehensive, up-to-date dataset from the Meteoritical Bulletin.">
+    <meta property="og:type" content="website">
     <!-- does noy cause problems -->
 
     <link rel="stylesheet" href="../styles/about.css">
@@ -22,53 +28,30 @@
     <main>
         <div id="main-container">
             <div id="intro">
-                <h1 id="title-top">The Project</h1>
-                <p>Meteorite landings map is a small project from a first year Computer Science student aiming at
-                    practicing web development by creating a website that fetches JSON data from an API.
-                    <br>After fetching it, the data is then manipulated and displayed on the map.
-                </p>
+                <h1 id="title-top">Meteorite Landings Map</h1>
+                <p>This project brings together a large meteorite dataset into an interactive map that makes it easy to explore locations, classes, masses, years, and direct reference links for meteorites around the world.</p>
             </div>
             <div id="description">
-                <h2>How does it work?</h2>
-                <p>The data is fetched from the NASA dataset API and displayed on the map powered by Leaflet JS. The
-                    clustering is made possible via Leaflet.markercluster, a Leaflet JS plugin.</p>
+                <h2>How it works</h2>
+                <p>The map is powered by Leaflet JS, with marker clustering provided by Leaflet.markercluster. The dataset is parsed from a local Meteoritical Bulletin CSV and rendered in the browser, allowing fast searching, filtering, and visual exploration of meteorite fall and find locations.</p>
 
                 <h2>The Data</h2>
-                <p>There are around 45700 entries, but only around 32000 are displayed on the map. This is because about
-                    6200 objects have no coordinates, therefore they would be grouped in one single point. Trying to
-                    open this large cluster could cause the page to stop working, therefore, I have decided to omit the
-                    data of these objects.
-                    <br><br>In Antartica, three big clusters on the same coordinates respectively can be found. 1505
-                    meteorite fragments belong to Asuka, 4761 to Yamato and 3040 to Queen Alexandra Range. Opening these
-                    clusters may take some time.
-                    <br><br>So where are the 6000 missing meteorites? Likely there are some keys missing in the endpoint
-                    which are causing the data to remain hidden, but it may not be it. Nevetheless, I am working to
-                    bring the wandering objects to the map.
-                </p>
+                <p>The current dataset contains 83,625 meteorite entries, and every record includes coordinates. This is a significantly more complete dataset than the older NASA API JSON feed, which was limited to around 45,700 entries and ended in 2013. The newer source is based on the Meteoritical Bulletin and includes a more recent cutoff in October 2024.</p>
+                <p>The project uses the Meteoritical Bulletin as its primary source because the NASA API is no longer a reliable or complete option for this use case. The Bulletin data is more comprehensive, includes a broader range of meteorites, and provides direct links to detailed records.</p>
+                <p>In other words, this map is not a partial snapshot of the older NASA dataset: it is built around the most complete public meteorite record set currently available in this project, with all coordinates retained and more complete historical coverage.</p>
 
                 <h2>How do I recognise a meteorite?</h2>
                 <p><a href="https://www.usgs.gov/faqs/i-think-i-found-meteorite-how-can-i-tell-sure"
-                        target="_blank">This guide</a> from the United States government can help identifying meteorites
-                    from other rocks. The government guide was created with the information found in the <a
+                        target="_blank" rel="noopener noreferrer">This guide</a> from the United States Geological Survey can help identify meteorites from other rocks. The information was compiled with the support of the <a
                         href="http://meteorite.unm.edu/meteorites/meteorite-museum/how-id-meteorite/"
-                        target="_blank">Meteorite Museum</a> from the University of New Mexico.</p>
+                        target="_blank" rel="noopener noreferrer">Meteorite Museum</a> at the University of New Mexico.</p>
 
                 <h2>Want to know more about meteorites?</h2>
-                <p>Have a look at <a href="https://www.researchgate.net/publication/326053427_Meteorite_Landings"
-                        target="_blank">this research paper</a> that analyzes and correlates the data contained in the
-                    dataset that was also used for the map.
-                    <br>It is also worth checking the <a href="https://meteoritical.org/" target="_blank">Meteoritical
-                        Society website.</a>
-                </p>
+                <p>Explore the <a href="https://meteoritical.org/" target="_blank" rel="noopener noreferrer">Meteoritical Society</a> website for scientific context and up-to-date meteorite research. You can also read a detailed overview of meteorite landings in <a href="https://www.researchgate.net/publication/326053427_Meteorite_Landings"
+                        target="_blank" rel="noopener noreferrer">this research paper</a>.</p>
 
                 <h2>What is the difference between meteorites, meteors, meteoroids and asteroids?</h2>
-                <p>Well, in a nutshell, meteorites are rocks that fell on Earth (or any planet or moon) and are now
-                    found on its surface.<br>A meteor is the short passage of a space rock through the atmosphere. It
-                    becomes visible due to the intense heath originated from the friction between the object and the air
-                    molecules.<br>Meteoroids are just tiny asteroids up to a meter in diameter.<br>And comets? Comets
-                    are celestial objects that contain frozen water and gasses. They are different than asteroids as the
-                    latter composition is mainly rocky or metallic. Hence, this is why the tail is not a feature of
-                    asteroids.</p>
+                <p>In short, a meteorite is a rock that has reached the surface of a planet or moon. A meteor is the glowing streak seen in the atmosphere as a meteoroid burns up. A meteoroid is a small rocky or metallic fragment in space, while an asteroid is a larger rocky body orbiting the Sun. Comets are ice-rich objects, which is why they often develop tails while asteroids generally do not.</p>
             </div>
         </div>
 
@@ -76,7 +59,7 @@
             <div id="footer-content">
                 <ul>
                     <li>
-                        <a href="../index">Home | Map</a>
+                        <a href="../index.html">Home | Map</a>
                     </li>
                     <li>
                         <a href="https://github.com/SweetEyesBirb/Meteorite-Landings-Map">Github repository</a>
