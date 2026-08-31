@@ -91,7 +91,9 @@ function main() {
               const csvText = await response.text();
               const parsedRows = parseCSV(csvText);
 
-              return parsedRows
+              logCoordinateSummary(parsedRows, "Before CSV filtering");
+
+              const mappedRows = parsedRows
                   .filter(row => row.Name && row.Latitude && row.Longitude)
                   .map(row => ({
                       name: row.Name,
@@ -107,6 +109,9 @@ function main() {
                           longitude: parseFloat(row.Longitude)
                       }
                   }));
+
+              logCoordinateSummary(mappedRows, "After CSV filtering");
+              return mappedRows;
           });
 
       return fetchDataPromise;
@@ -205,6 +210,39 @@ function main() {
 
       const raw = String(yearValue).trim();
       return raw || "Unknown";
+  }
+
+  function logCoordinateSummary(data, label = "Dataset") {
+      const totalRows = data.length;
+
+      const nullOrEmpty = data.filter(landing => {
+          const lat = landing.geolocation ? landing.geolocation.latitude : landing.Latitude;
+          const lng = landing.geolocation ? landing.geolocation.longitude : landing.Longitude;
+          return lat == null || lng == null || String(lat).trim() === "" || String(lng).trim() === "";
+      }).length;
+
+      const invalidCluster = data.filter(landing => {
+          const lat = landing.geolocation ? landing.geolocation.latitude : landing.Latitude;
+          const lng = landing.geolocation ? landing.geolocation.longitude : landing.Longitude;
+          return String(lat) === "-71.500000" && String(lng) === "35.666670";
+      }).length;
+
+      const usable = data.filter(landing => {
+          const latValue = landing.geolocation ? landing.geolocation.latitude : landing.Latitude;
+          const lngValue = landing.geolocation ? landing.geolocation.longitude : landing.Longitude;
+          const lat = Number.parseFloat(latValue);
+          const lng = Number.parseFloat(lngValue);
+
+          return Number.isFinite(lat) && Number.isFinite(lng) && isValidCoordinate(lat) && isValidCoordinate(lng, false);
+      }).length;
+
+      console.log(`${label} summary:`, {
+          totalRows,
+          rowsWithNullOrEmptyCoordinates: nullOrEmpty,
+          rowsWithInvalidClusterCoordinates: invalidCluster,
+          rowsWithUsableCoordinates: usable,
+          rowsRendered: usable
+      });
   }
 
   function populateTypeFilterOptions(data) {
@@ -313,6 +351,7 @@ function main() {
       // console.log("Input values:", lMass, hMass, fYear, tYear);
 
       const newAllData = await fetchDataFromAPI();
+      logCoordinateSummary(newAllData, "Before map filter");
       // console.log("Raw data:", newAllData);
 
       let filteredData = newAllData.filter(landing => {
@@ -344,6 +383,7 @@ function main() {
           let selectedType = typeFilterSelect ? typeFilterSelect.value : "all";
 
           const filteredObjects = await filterMap(lowerMassValue, higherMassValue, yearFrom, yearTo, selectedType);
+          logCoordinateSummary(filteredObjects, "After filterMap");
           renderData(filteredObjects);
       } catch (error) {
           console.error("error is: " + error);
