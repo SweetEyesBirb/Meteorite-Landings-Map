@@ -146,6 +146,19 @@ function main() {
       }
   }
 
+  function formatMassKg(massValue) {
+      if (massValue === null || massValue === undefined || massValue === "") {
+          return "No Data";
+      }
+
+      const mass = Number.parseFloat(massValue);
+      if (!Number.isFinite(mass)) {
+          return "No Data";
+      }
+
+      return `${mass} Kg`;
+  }
+
   /**
    * The function `renderData` fetches data from an API, processes it, and adds markers with popups to a
    * map.
@@ -168,7 +181,7 @@ function main() {
 
               const html = `<h2>Name: ${landing.name}</h2>
         <h3>Place: ${landing.place}</h3>
-        <h3>Mass (Kg): ${landing.mass ? parseInt(landing.mass) / 1000 : "No Data"}</h3>
+        <h3>Mass: ${formatMassKg(landing.mass)}</h3>
         <h3>${landing.fall} in year: ${landing.year ? parseInt((landing.year).substring(0, 4), 10) : "Unknown"}</h3>
         <h3>Coordinates: Lat: ${coords.lat} Lng: ${coords.lng}</h3>
         <h3>Class: ${landing.recclass}</h3>
@@ -210,7 +223,7 @@ function main() {
       lMass = lMass ? parseFloat(lMass) : 0;
       hMass = hMass ? parseFloat(hMass) : 60000;
       fYear = fYear ? parseInt(fYear) : 0;
-      tYear = tYear ? parseInt(tYear) : 2013;
+      tYear = tYear ? parseInt(tYear) : 2024;
       // console.log("Input values:", lMass, hMass, fYear, tYear);
 
       const newAllData = await fetchDataFromAPI();
@@ -218,12 +231,11 @@ function main() {
 
       let filteredData = newAllData.filter(landing => {
 
-          const massLow = landing.mass ? (parseInt(landing.mass) / 1000) : 0;
-          const massHigh = landing.mass ? (parseInt(landing.mass) / 1000) : 60000;
+          const massKg = landing.mass ? Number.parseFloat(landing.mass) : 0;
           const yearLow = landing.year ? parseInt(landing.year?.substring(0, 4), 10) : 860;
-          const yearHigh = landing.year ? parseInt(landing.year?.substring(0, 4), 10) : 2013;
+          const yearHigh = landing.year ? parseInt(landing.year?.substring(0, 4), 10) : 2024;
 
-          return massLow >= lMass && massHigh <= hMass && yearLow >= fYear && yearHigh <= tYear;
+          return massKg >= lMass && massKg <= hMass && yearLow >= fYear && yearHigh <= tYear;
       });
       return filteredData;
   }
