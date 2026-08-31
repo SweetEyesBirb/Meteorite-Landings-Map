@@ -3,6 +3,7 @@ function main() {
 
   let map;
   const submitBtn = document.getElementById("submit");
+  const typeFilterSelect = document.getElementById("type-filter");
   const clusters = L.markerClusterGroup();
 
   /**
@@ -98,6 +99,7 @@ function main() {
                       fall: row.Fall || "Unknown",
                       year: row.Year || "",
                       mass: row["Mass(kg)"] || "",
+                      type: row.Type || "Unknown",
                       recclass: row.Type || "Unknown",
                       link: row.Link || "",
                       geolocation: {
@@ -159,6 +161,84 @@ function main() {
       return `${mass} Kg`;
   }
 
+  function normalizeYearValue(yearValue) {
+      if (yearValue === null || yearValue === undefined || yearValue === "") {
+          return null;
+      }
+
+      const raw = String(yearValue).trim();
+      if (!raw) {
+          return null;
+      }
+
+      if (/Ma\b/i.test(raw)) {
+          const strictMatch = raw.match(/<\s*(\d+(?:\.\d+)?)/i)
+              || raw.match(/(\d+(?:\.\d+)?)\s*(?:±|\+)\s*\d+\s*Ma/i)
+              || raw.match(/(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)\s*Ma/i)
+              || raw.match(/(\d+(?:\.\d+)?)\s*Ma/i);
+
+          if (!strictMatch) {
+              return null;
+          }
+
+          const firstNumber = Number.parseFloat(strictMatch[1] || strictMatch[0]);
+          return Number.isFinite(firstNumber) ? firstNumber : null;
+      }
+
+      const rangeMatch = raw.match(/(\d{4})\s*[-–]\s*(\d{4})/);
+      if (rangeMatch) {
+          return Number.parseFloat(rangeMatch[1]);
+      }
+
+      const singleYearMatch = raw.match(/(\d{4})/);
+      if (singleYearMatch) {
+          return Number.parseFloat(singleYearMatch[1]);
+      }
+
+      return null;
+  }
+
+  function formatYearValue(yearValue) {
+      if (!yearValue) {
+          return "Unknown";
+      }
+
+      const raw = String(yearValue).trim();
+      return raw || "Unknown";
+  }
+
+  function populateTypeFilterOptions(data) {
+      if (!typeFilterSelect) {
+          return;
+      }
+
+      const selectedValue = typeFilterSelect.value || "all";
+      const uniqueTypes = [...new Set(data
+          .map(entry => entry.type)
+          .filter(type => type && type.trim() !== ""))]
+          .sort((a, b) => a.localeCompare(b));
+
+      typeFilterSelect.innerHTML = "";
+
+      const allOption = document.createElement("option");
+      allOption.value = "all";
+      allOption.textContent = "All Types / Classes";
+      typeFilterSelect.appendChild(allOption);
+
+      uniqueTypes.forEach(type => {
+          const option = document.createElement("option");
+          option.value = type;
+          option.textContent = type;
+          typeFilterSelect.appendChild(option);
+      });
+
+      if (uniqueTypes.includes(selectedValue)) {
+          typeFilterSelect.value = selectedValue;
+      } else {
+          typeFilterSelect.value = "all";
+      }
+  }
+
   /**
    * The function `renderData` fetches data from an API, processes it, and adds markers with popups to a
    * map.
@@ -179,12 +259,16 @@ function main() {
                   ? `<a href="${landing.link}" target="_blank" rel="noopener noreferrer">Meteoritical Bulletin Link</a>`
                   : "No bulletin link available";
 
+              const isAgeBasedRecord = landing.type === "Impact Crater" || /Ma\b/i.test(String(landing.year || ""));
+              const dateTitle = isAgeBasedRecord ? "Age" : "Year";
+              const dateValue = isAgeBasedRecord ? formatYearValue(landing.year) : (landing.year ? parseInt((landing.year).substring(0, 4), 10) : "Unknown");
+
               const html = `<h2>Name: ${landing.name}</h2>
         <h3>Place: ${landing.place}</h3>
         <h3>Mass: ${formatMassKg(landing.mass)}</h3>
-        <h3>${landing.fall} in year: ${landing.year ? parseInt((landing.year).substring(0, 4), 10) : "Unknown"}</h3>
+        <h3>${landing.fall} in ${dateTitle.toLowerCase()}: ${dateValue}</h3>
         <h3>Coordinates: Lat: ${coords.lat} Lng: ${coords.lng}</h3>
-        <h3>Class: ${landing.recclass}</h3>
+        <h3>Type / Class: ${landing.recclass}</h3>
         <h3>${linkHtml}</h3>`;
 
               marker.bindPopup(html);
@@ -200,6 +284,7 @@ function main() {
 */
   function renderAllData() {
       fetchDataFromAPI().then(allData => {
+          populateTypeFilterOptions(allData);
           renderData(allData);
       })
           .catch(error => {
@@ -219,11 +304,12 @@ function main() {
    * @param tYear - The parameter `tYear` represents the upper limit of the year range for filtering the
    * data. It is a number that specifies the maximum year value.
    */
-  async function filterMap(lMass, hMass, fYear, tYear) {
+  async function filterMap(lMass, hMass, fYear, tYear, selectedType = "all") {
       lMass = lMass ? parseFloat(lMass) : 0;
       hMass = hMass ? parseFloat(hMass) : 60000;
       fYear = fYear ? parseInt(fYear) : 0;
       tYear = tYear ? parseInt(tYear) : 2024;
+      const normalizedType = selectedType && selectedType !== "all" ? selectedType.trim() : "";
       // console.log("Input values:", lMass, hMass, fYear, tYear);
 
       const newAllData = await fetchDataFromAPI();
@@ -232,10 +318,16 @@ function main() {
       let filteredData = newAllData.filter(landing => {
 
           const massKg = landing.mass ? Number.parseFloat(landing.mass) : 0;
-          const yearLow = landing.year ? parseInt(landing.year?.substring(0, 4), 10) : 860;
-          const yearHigh = landing.year ? parseInt(landing.year?.substring(0, 4), 10) : 2024;
+          const isAgeBasedRecord = landing.type === "Impact Crater" || /Ma\b/i.test(String(landing.year || ""));
+          const comparableYear = normalizeYearValue(landing.year);
 
-          return massKg >= lMass && massKg <= hMass && yearLow >= fYear && yearHigh <= tYear;
+          const passesYear = isAgeBasedRecord
+              ? true
+              : comparableYear !== null && comparableYear >= fYear && comparableYear <= tYear;
+
+          const passesType = !normalizedType || landing.type?.toLowerCase() === normalizedType.toLowerCase();
+
+          return massKg >= lMass && massKg <= hMass && passesYear && passesType;
       });
       return filteredData;
   }
@@ -249,8 +341,9 @@ function main() {
           let higherMassValue = document.getElementById("mass-high").value;
           let yearFrom = document.getElementById("year-from").value;
           let yearTo = document.getElementById("year-to").value;
+          let selectedType = typeFilterSelect ? typeFilterSelect.value : "all";
 
-          const filteredObjects = await filterMap(lowerMassValue, higherMassValue, yearFrom, yearTo);
+          const filteredObjects = await filterMap(lowerMassValue, higherMassValue, yearFrom, yearTo, selectedType);
           renderData(filteredObjects);
       } catch (error) {
           console.error("error is: " + error);
