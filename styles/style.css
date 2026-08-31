@@ -104,7 +104,8 @@ label {
     align-items: flex-start;
 }
 
-input[type=number] {
+input[type=number],
+select {
     height: 2.2rem;
     min-width: 9.5rem;
     border: 1px solid rgba(255, 255, 255, 0.12);
@@ -113,12 +114,18 @@ input[type=number] {
     margin-top: .2em;
     padding: 0.5rem 0.7rem;
     border-radius: 10px;
-    background: rgba(255, 255, 255, 0.04);
+    background-color: rgba(13, 0, 33, 0.8);
     color: var(--text-color);
     transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-input[type=number]:focus {
+select option {
+    background-color: #0d0021;
+    color: var(--text-color);
+}
+
+input[type=number]:focus,
+select:focus {
     border-color: rgba(108, 232, 223, 0.8);
     box-shadow: 0 0 0 3px rgba(108, 232, 223, 0.18);
 }
