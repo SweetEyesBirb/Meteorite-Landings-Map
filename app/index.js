@@ -11,34 +11,103 @@ function main() {
    * @returns The function `fetchDataFromAPI` returns a promise that resolves to an array of data fetched
    * from the NASA API.
    */
+  let fetchDataPromise = null;
+
+  function parseCSV(text) {
+      const rows = [];
+      let currentRow = [];
+      let currentValue = "";
+      let inQuotes = false;
+
+      for (let i = 0; i < text.length; i++) {
+          const char = text[i];
+          const nextChar = text[i + 1];
+
+          if (char === '"') {
+              if (inQuotes && nextChar === '"') {
+                  currentValue += '"';
+                  i++;
+              } else {
+                  inQuotes = !inQuotes;
+              }
+              continue;
+          }
+
+          if (char === ',' && !inQuotes) {
+              currentRow.push(currentValue);
+              currentValue = "";
+              continue;
+          }
+
+          if ((char === '\n' || char === '\r') && !inQuotes) {
+              if (char === '\r' && nextChar === '\n') {
+                  i++;
+              }
+              currentRow.push(currentValue);
+              if (currentRow.some(value => value.trim() !== "")) {
+                  rows.push(currentRow);
+              }
+              currentRow = [];
+              currentValue = "";
+              continue;
+          }
+
+          currentValue += char;
+      }
+
+      if (currentValue.length > 0 || currentRow.length > 0) {
+          currentRow.push(currentValue);
+          if (currentRow.some(value => value.trim() !== "")) {
+              rows.push(currentRow);
+          }
+      }
+
+      if (rows.length === 0) {
+          return [];
+      }
+
+      const headers = rows[0].map(header => header.trim());
+      return rows.slice(1).map(row => {
+          const record = {};
+          headers.forEach((header, index) => {
+              record[header] = row[index] !== undefined ? row[index].trim() : "";
+          });
+          return record;
+      });
+  }
+
   async function fetchDataFromAPI() {
-      let fetchDataPromise; // Variable to store the ongoing fetch request
-      // Check if the fetch request is already in progress, and return the existing promise
       if (fetchDataPromise) {
           return fetchDataPromise;
       }
-      const baseUrl = 'https://data.nasa.gov/resource/gh4g-9sfh.json';
-      const perPage = 1000;
-      let currentPage = 1;
-      let allData = [];
 
-      while (true) {
-          const url = `${baseUrl}?$limit=${perPage}&$offset=${(currentPage - 1) * perPage}`;
-          try {
-              const response = await fetch(url);
-              const data = await response.json();
-              if (data.length === 0) {
-                  break;
+      fetchDataPromise = fetch("data/meteoritical_bulletin_data_final.csv")
+          .then(async response => {
+              if (!response.ok) {
+                  throw new Error(`Failed to fetch local CSV: ${response.status}`);
               }
-              allData = allData.concat(data);
-              currentPage++;
-          } catch (error) {
-              console.error('Error fetching data:', error);
-              break;
-          }
-      }
-      fetchDataPromise = Promise.resolve(allData); // Store the promise so subsequent calls return the same promise
-      return allData;
+
+              const csvText = await response.text();
+              const parsedRows = parseCSV(csvText);
+
+              return parsedRows
+                  .filter(row => row.Name && row.Latitude && row.Longitude)
+                  .map(row => ({
+                      name: row.Name,
+                      place: row.Place || "Unknown",
+                      fall: row.Fall || "Unknown",
+                      year: row.Year || "",
+                      mass: row["Mass(kg)"] || "",
+                      recclass: row.Type || "Unknown",
+                      link: row.Link || "",
+                      geolocation: {
+                          latitude: parseFloat(row.Latitude),
+                          longitude: parseFloat(row.Longitude)
+                      }
+                  }));
+          });
+
+      return fetchDataPromise;
   }
 
   async function initMap() {
@@ -89,18 +158,24 @@ function main() {
           const lat = parseFloat(landing.geolocation?.latitude);
           const lng = parseFloat(landing.geolocation?.longitude);
 
-          if (lat && lng && isValidCoordinate(lat) && isValidCoordinate(lng, false)) {
+          if (Number.isFinite(lat) && Number.isFinite(lng) && isValidCoordinate(lat) && isValidCoordinate(lng, false)) {
               const coords = { lat, lng };
               const marker = L.marker(coords);
 
+              const linkHtml = landing.link
+                  ? `<a href="${landing.link}" target="_blank" rel="noopener noreferrer">Meteoritical Bulletin Link</a>`
+                  : "No bulletin link available";
+
               const html = `<h2>Name: ${landing.name}</h2>
+        <h3>Place: ${landing.place}</h3>
         <h3>Mass (Kg): ${landing.mass ? parseInt(landing.mass) / 1000 : "No Data"}</h3>
         <h3>${landing.fall} in year: ${landing.year ? parseInt((landing.year).substring(0, 4), 10) : "Unknown"}</h3>
         <h3>Coordinates: Lat: ${coords.lat} Lng: ${coords.lng}</h3>
-        <h3>Class: ${landing.recclass}</h3>`;
+        <h3>Class: ${landing.recclass}</h3>
+        <h3>${linkHtml}</h3>`;
 
               marker.bindPopup(html);
-              marker.bindTooltip(html);
+              marker.bindTooltip(`<strong>${landing.name}</strong><br>Place: ${landing.place}<br>${linkHtml}`);
               clusters.addLayer(marker);
           }
       });
